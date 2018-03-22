@@ -9,6 +9,17 @@ import java.util.Random;
 
 /**
  * Created by CallumMorham on 3/18/18.
+ * The aniimator for the pong game, this also has all the logic inside it
+ * calls two other classes "ball and paddle" just to create the image
+ *
+ * bounces the ball around in the box and makes it reflect in a different direction with
+ * nuetonian physics
+ *
+ * flashes color each time it hits a wall
+ *
+ * ball starts in random location with random speed each time.
+ * speed is higher than usuall for simplistic testing
+ *
  */
 
 public class PongAnimator implements Animator {
@@ -29,56 +40,47 @@ public class PongAnimator implements Animator {
     private int ballStartY = 100;
     private int ballDirection;
     private int radius = 40;
-    private int ballSpd = gen.nextInt(30) + 10;
+    private int ballSpd = gen.nextInt(30) + 50;
     int ballColorGen = 0;
 
     //creates paddle and ball
     private Paddle humanPaddle;
     private Ball ball;
 
-    /**
+    /*
      * Interval between animation frames: .01 seconds
-     *
      * @return the time interval between frames, in milliseconds.
      */
     @Override
     public int interval() {
         return 10;
     }
-
     /**
      * The background color: Black.
-     *
      * @return the background color onto which we will draw the image.
      */
     @Override
     public int backgroundColor() {
         return Color.rgb(0, 0, 0);
     }
-
     /**
      * Tells that we never pause.
-     *
      * @return indication of whether to pause
      */
     @Override
     public boolean doPause() {
         return false;
     }
-
     /**
      * Tells that we never stop the animation.
-     *
      * @return indication of whether to quit.
      */
     @Override
     public boolean doQuit() {
         return false;
     }
-
     /**
      * Action to perform on clock tick
-     *
      * @param g the graphics object on which to draw
      */
     @Override
@@ -108,7 +110,6 @@ public class PongAnimator implements Animator {
 
          Solution: Create a new constant variable and multiply it by speed
          */
-
         int ballX = (ballStartX * ballSpd);
         int ballY = (ballStartY * ballSpd);
 
@@ -116,7 +117,8 @@ public class PongAnimator implements Animator {
         //also sets ballWall to true if it touches a wall
         if ((ballX - 60) > screenWidth) {
             ballOut = true;
-        } else if (((ballX + 60) >= humanPaddleTopLeftX) && (ballY >= humanPaddleTopLeftY) && (ballY <= humanPaddleBottomRightY)) {
+        }
+        else if (((ballX + 60) >= humanPaddleTopLeftX) && (ballY >= humanPaddleTopLeftY) && (ballY <= humanPaddleBottomRightY)) {
             if (UpRight) {//Hit's paddle
                 UpRight = false;
                 DownLeft = false;
@@ -129,7 +131,8 @@ public class PongAnimator implements Animator {
                 DownRight = false;
                 DownLeft = true;
             }
-        } else if ((ballY - 60) <= 50) { // hits top
+        }
+        else if ((ballY - 60) <= 50) { // hits top
             if (UpLeft) {
                 UpLeft = false;
                 UpRight = false;
@@ -143,7 +146,9 @@ public class PongAnimator implements Animator {
                 DownLeft = false;
                 DownRight = true;
                 ballWall = true;
-            } else if ((ballX - 60) <= 50) { // hits left side
+            }
+        }
+            else if ((ballX - 60) <= 50) { // hits left side
                 if (UpLeft) {
                     UpLeft = false;
                     DownLeft = false;
@@ -174,12 +179,12 @@ public class PongAnimator implements Animator {
                     ballWall = true;
                 }
             }
-        }
+
 
         if (ballOut == true) {
             ballOut = false;//set to false so method doesnt instantly reacll next tick
 
-            /**
+            /*
              External Citation
              Date: 21 March 2018
              Problem: Random ball position wont work
@@ -189,11 +194,11 @@ public class PongAnimator implements Animator {
              Solution: set it to random from 0-100 which would break on screens of
              different sizes but fixes for tablets of pixels like nexus9 and PixelC
              */
-            ballStartX = gen.nextInt(100);//random starting location of the ball
-            ballStartY = gen.nextInt(100);//gen.nextInt(screenHeight);//TODO Should work? figure out why it fails
-            ballSpd = gen.nextInt(30) + 10;//randomly sets speed
-            ballX = (ballStartX * ballSpd);//recalculates location
-            ballY = (ballStartY * ballSpd);
+            ballStartX = gen.nextInt(30);//random starting location of the ball
+            ballStartY = gen.nextInt(30);//gen.nextInt(screenHeight);//TODO Should work? figure out why it fails
+            ballSpd = gen.nextInt(30) + 50;//randomly sets speed
+            ballX = ballStartX;//recalculates location
+            ballY = ballStartY;
 
             ballDirection = gen.nextInt(3);//randomly chooses a direction
             UpLeft = false;//sets all directions to false
@@ -210,7 +215,7 @@ public class PongAnimator implements Animator {
         Paint whitePaint = new Paint();//paint for three items
         whitePaint.setColor(Color.WHITE);
 
-        /**
+        /*
          External Citation
          Date: 21 March 2018
          Problem: how to change colors between ticks
@@ -220,7 +225,6 @@ public class PongAnimator implements Animator {
          Solution: Randomly craete statements to change the definition of white
          paint even though it wont be white
          */
-
         if (ballWall == true)//flashes all drawn pieces each time it hits a wall
         {
             ballColorGen = gen.nextInt(5);
@@ -244,8 +248,6 @@ public class PongAnimator implements Animator {
         humanPaddle = new Paddle(humanPaddleTopLeftX, humanPaddleTopLeftY, humanPaddleBottomRightX, humanPaddleBottomRightY, whitePaint);
         g.drawRect(humanPaddle.paddleBounds, humanPaddle.paddleColor);
     }
-
     @Override
-    public void onTouch(MotionEvent event) {
-    }
+    public void onTouch(MotionEvent event) {}
 }
