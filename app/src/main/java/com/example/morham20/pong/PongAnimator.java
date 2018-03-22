@@ -13,28 +13,28 @@ import java.util.Random;
 
 public class PongAnimator implements Animator {
 
-    private Random gen = new Random();//random generator
+    //random generator
+    private Random gen = new Random();
 
-    // TODO: Random Ball Starting position and direction, but must start in middle like actual game
-    // TODO: Random Ball Start speed and decaying ball speed
-    private int ballStartX = 0; // starting X position of Ball
-    private int ballStartY = 0; // starting Y position of Ball
-    private int ballDirection;
-
+    //for ball direction and if it's touching a wall or out of play
     private boolean UpLeft = true;
     private boolean UpRight = false;
     private boolean DownLeft = false;
     private boolean DownRight = false;
-
+    private boolean ballWall = false;
     private boolean ballOut = false;
 
+    //all Int's
+    private int ballStartX = 100;
+    private int ballStartY = 100;
+    private int ballDirection;
+    private int radius = 40;
+    private int ballSpd = gen.nextInt(30) + 10;
+    int ballColorGen = 0;
+
+    //creates paddle and ball
     private Paddle humanPaddle;
     private Ball ball;
-
-    private int radius = 40;
-    private int ballSpd = 100;//gen.nextInt(30) + 10;
-
-
 
     /**
      * Interval between animation frames: .01 seconds
@@ -84,152 +84,168 @@ public class PongAnimator implements Animator {
     @Override
     public void tick(Canvas g) {
 
-        int screenHeight = g.getHeight();//gets height or board
-        int screenWidth = g.getWidth();//gets width of board
+        int screenHeight = g.getHeight();
+        int screenWidth = g.getWidth();
+
         //Makes points for the player Paddle
         int humanPaddleTopLeftX = screenWidth - 50;
-        int humanPaddleTopLeftY = (screenHeight /2) - 200;
+        int humanPaddleTopLeftY = (screenHeight / 2) - 200;
         int humanPaddleBottomRightX = screenWidth - 10;
-        int humanPaddleBottomRightY = (screenHeight /2) + 200;
+        int humanPaddleBottomRightY = (screenHeight / 2) + 200;
 
-        // Multiplying countX or countY changes the speed of the ball in its respected X or Y direction
-        // % by the board dimensions loops the ball back into the board.
-        // Don't need the % to loop the ball back anymore.
-        int ballX = (ballStartX*ballSpd);    //%screenWidth;
-        int ballY = (ballStartY*ballSpd);    //%screenHeight;
-
-
-        // Determines how the ball moves depending on its direction
+        //determines the ball's direction and how it moves
         if (UpLeft) {ballStartX--;ballStartY--;}
         if (UpRight) {ballStartX++;ballStartY--;}
         if (DownLeft) {ballStartX--;ballStartY++;}
         if (DownRight) {ballStartX++;ballStartY++;}
 
+        /**
+         External Citation
+         Date: 21 March 2018
+         Problem: Ball positions weren't working properly
 
-        // if (ballX < 0) ballX += screenWidth;
-        // if (ballY < 0) ballY += screenHeight;
+         Resource: ClassMate Anthony Lieu
 
-        // This causes a slight bug in the sense that the ball will be past the board's dimensions but proceeds
-        // bounce back once it's y coordinates matches.
-        // I should check for the dimensions to be on the screen. If they aren't then the game should stop until
-        // a new ball is somehow introduced.
-        // TODO: Once ball disappears a new ball should be randomly generated to replace it.
+         Solution: Create a new constant variable and multiply it by speed
+         */
 
+        int ballX = (ballStartX * ballSpd);
+        int ballY = (ballStartY * ballSpd);
 
-        if ((ballX-60) > screenWidth) {
+        //checks directionality then sets the direction in motion to true
+        //also sets ballWall to true if it touches a wall
+        if ((ballX - 60) > screenWidth) {
             ballOut = true;
-        }
-        else if (((ballX + 60) >= humanPaddleTopLeftX) && (ballY >= humanPaddleTopLeftY) && (ballY <= humanPaddleBottomRightY)) {
-            if (UpRight) {
-                UpLeft = true;
+        } else if (((ballX + 60) >= humanPaddleTopLeftX) && (ballY >= humanPaddleTopLeftY) && (ballY <= humanPaddleBottomRightY)) {
+            if (UpRight) {//Hit's paddle
                 UpRight = false;
                 DownLeft = false;
                 DownRight = false;
+                UpLeft = true;
             }
             if (DownRight) {
                 UpLeft = false;
                 UpRight = false;
+                DownRight = false;
                 DownLeft = true;
-                DownRight = false;
             }
-        }
-
-        else if ((ballX - 60) <= 50) { // hits left side
-            if (UpLeft) {
-                UpLeft = false;
-                UpRight = true;
-                DownLeft = false;
-                DownRight = false;
-            }
-            if (DownLeft) {
-                UpLeft = false;
-                UpRight = false;
-                DownLeft = false;
-                DownRight = true;
-            }
-        }
-        else if ((ballY + 60) >= screenHeight - 50) { // hits bottom
-            if (DownLeft) {
-                UpLeft = true;
-                UpRight = false;
-                DownLeft = false;
-                DownRight = false;
-            }
-            if (DownRight) {
-                UpLeft = false;
-                UpRight = true;
-                DownLeft = false;
-                DownRight = false;
-            }
-        }
-        else if ((ballY - 60) <= 50) { // hits top
+        } else if ((ballY - 60) <= 50) { // hits top
             if (UpLeft) {
                 UpLeft = false;
                 UpRight = false;
-                DownLeft = true;
                 DownRight = false;
+                DownLeft = true;
+                ballWall = true;
             }
             if (UpRight) {
                 UpLeft = false;
                 UpRight = false;
                 DownLeft = false;
                 DownRight = true;
+                ballWall = true;
+            } else if ((ballX - 60) <= 50) { // hits left side
+                if (UpLeft) {
+                    UpLeft = false;
+                    DownLeft = false;
+                    DownRight = false;
+                    UpRight = true;
+                    ballWall = true;
+                }
+                if (DownLeft) {
+                    UpLeft = false;
+                    UpRight = false;
+                    DownLeft = false;
+                    DownRight = true;
+                    ballWall = true;
+                }
+            } else if ((ballY + 60) >= screenHeight - 50) { // hits bottom
+                if (DownLeft) {
+                    UpRight = false;
+                    DownLeft = false;
+                    DownRight = false;
+                    UpLeft = true;
+                    ballWall = true;
+                }
+                if (DownRight) {
+                    UpLeft = false;
+                    DownLeft = false;
+                    DownRight = false;
+                    UpRight = true;
+                    ballWall = true;
+                }
             }
         }
 
         if (ballOut == true) {
-            ballOut = false;
-            ballStartX = 100;
-            ballStartY = 100;
-            ballSpd = 20;
-            ballDirection = gen.nextInt(3);
-            if (ballDirection == 0) {
-                UpLeft = true;
-                UpRight = false;
-                DownLeft = false;
-                DownRight = false;
-            }
-            else if (ballDirection == 1) {
-                UpLeft = false;
-                UpRight = true;
-                DownLeft = false;
-                DownRight = false;
-            }
-            else if (ballDirection == 2) {
-                UpLeft = false;
-                UpRight = false;
-                DownLeft = true;
-                DownRight = false;
-            }
-            else {
-                UpLeft = false;
-                UpRight = false;
-                DownLeft = false;
-                DownRight = true;
-            }
+            ballOut = false;//set to false so method doesnt instantly reacll next tick
+
+            /**
+             External Citation
+             Date: 21 March 2018
+             Problem: Random ball position wont work
+
+             Resource: ClassMate Anthony Lieu
+
+             Solution: set it to random from 0-100 which would break on screens of
+             different sizes but fixes for tablets of pixels like nexus9 and PixelC
+             */
+            ballStartX = gen.nextInt(100);//random starting location of the ball
+            ballStartY = gen.nextInt(100);//gen.nextInt(screenHeight);//TODO Should work? figure out why it fails
+            ballSpd = gen.nextInt(30) + 10;//randomly sets speed
+            ballX = (ballStartX * ballSpd);//recalculates location
+            ballY = (ballStartY * ballSpd);
+
+            ballDirection = gen.nextInt(3);//randomly chooses a direction
+            UpLeft = false;//sets all directions to false
+            UpRight = false;
+            DownLeft = false;
+            DownRight = false;
+
+            if (ballDirection == 0) {UpRight = true;}//sets the correct direction to true appropriatly
+            else if (ballDirection == 1) {DownLeft = true;}
+            else if (ballDirection == 2) {UpLeft = true;}
+            else {DownRight = true;}
         }
 
         Paint whitePaint = new Paint();//paint for three items
         whitePaint.setColor(Color.WHITE);
+
+        /**
+         External Citation
+         Date: 21 March 2018
+         Problem: how to change colors between ticks
+
+         Resource: ClassMate Chris Sebrects
+
+         Solution: Randomly craete statements to change the definition of white
+         paint even though it wont be white
+         */
+
+        if (ballWall == true)//flashes all drawn pieces each time it hits a wall
+        {
+            ballColorGen = gen.nextInt(5);
+            if (ballColorGen == 1) {whitePaint.setColor(Color.MAGENTA);}
+            else if (ballColorGen == 2) {whitePaint.setColor(Color.GREEN);}
+            else if (ballColorGen == 3) {whitePaint.setColor(Color.RED);}
+            else if (ballColorGen == 0) {whitePaint.setColor(Color.BLUE);}
+            else if (ballColorGen == 4) {whitePaint.setColor(Color.YELLOW);}
+            else {whitePaint.setColor(Color.CYAN);}
+        }
+        ballWall = false;//sets ballwall to false so it doesnt change every tick
+
+        //Creates White Ball
+        ball = new Ball(ballX, ballY, radius, whitePaint);
+        g.drawCircle(ball.ballX, ball.ballY, ball.ballRadius, ball.ballColor);
         //creates walls
         g.drawRect(0f, 0f, screenWidth, 50f, whitePaint); // top
-        g.drawRect(0f, 0f, 50f, screenHeight, whitePaint); // right
+        g.drawRect(0f, 0f, 50f, screenHeight, whitePaint); // side
         g.drawRect(0f, (screenHeight - 50), screenWidth, screenHeight, whitePaint); // bottom
         //Create White Paddle
         humanPaddle = new Paddle(humanPaddleTopLeftX, humanPaddleTopLeftY, humanPaddleBottomRightX, humanPaddleBottomRightY, whitePaint);
         g.drawRect(humanPaddle.paddleBounds, humanPaddle.paddleColor);
-        //Creates White Ball
-        ball = new Ball(ballX, ballY, radius, whitePaint);
-        g.drawCircle(ball.ballX, ball.ballY, ball.ballRadius, ball.ballColor);
-
-
     }
 
-    /**
-     *
-     */
     @Override
     public void onTouch(MotionEvent event) {
-
     }
 }

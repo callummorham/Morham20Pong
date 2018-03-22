@@ -4,6 +4,8 @@ import android.graphics.Paint;
 
 /**
  * Created by morham20 on 3/20/2018.
+ *
+ * Used to create a ball for the PongAnimator class
  */
 
 public class Ball {

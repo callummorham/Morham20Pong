@@ -5,6 +5,8 @@ import android.graphics.Rect;
 
 /**
  * Created by morham20 on 3/20/2018.
+ *
+ * Used to create a paddle for the PongAnimator Class
  */
 
 public class Paddle {
