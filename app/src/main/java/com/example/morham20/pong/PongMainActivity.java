@@ -1,9 +1,11 @@
 package com.example.morham20.pong;
 
-        import android.os.Bundle;
-        import android.app.Activity;
-        import android.view.Menu;
-        import android.widget.LinearLayout;
+import android.os.Bundle;
+import android.app.Activity;
+import android.view.Menu;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
 
 /**
  * PongMainActivity
@@ -17,10 +19,6 @@ package com.example.morham20.pong;
  *
  */
 public class PongMainActivity extends Activity {
-
-    /**
-     * creates an AnimationSurface containing a TestAnimator.
-     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

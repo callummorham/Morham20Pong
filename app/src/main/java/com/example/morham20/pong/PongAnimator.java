@@ -40,13 +40,14 @@ public class PongAnimator implements Animator {
     private int ballStartY = 100;
     private int ballDirection;
     private int radius = 40;
-    private int ballSpd = gen.nextInt(30) + 50;
+    private int ballSpd = gen.nextInt(30) + 40;
     int ballColorGen = 0;
 
     //creates paddle and ball
     private Paddle humanPaddle;
     private Ball ball;
-
+    private int  paddleMiddle;
+    private int ballScore = 0;
     /*
      * Interval between animation frames: .01 seconds
      * @return the time interval between frames, in milliseconds.
@@ -86,6 +87,7 @@ public class PongAnimator implements Animator {
     @Override
     public void tick(Canvas g) {
 
+
         int screenHeight = g.getHeight();
         int screenWidth = g.getWidth();
 
@@ -94,20 +96,56 @@ public class PongAnimator implements Animator {
         int humanPaddleTopLeftY = (screenHeight / 2) - 200;
         int humanPaddleBottomRightX = screenWidth - 10;
         int humanPaddleBottomRightY = (screenHeight / 2) + 200;
+        int paddleSize = (humanPaddleBottomRightY - humanPaddleTopLeftY);
 
         //determines the ball's direction and how it moves
         if (UpLeft) {ballStartX--;ballStartY--;}
         if (UpRight) {ballStartX++;ballStartY--;}
         if (DownLeft) {ballStartX--;ballStartY++;}
         if (DownRight) {ballStartX++;ballStartY++;}
+        paddleSize = 200;
+
+        /*
+         External Citation
+         Date: 28 March 2018
+         Problem: how to make paddle move to Y location of finger
+         Resource: https://stackoverflow.com/questions/42848034/android-studio-touch-screen
+         Solution: Just compare the paddle sizes based on the location and redraw the paddle and the walls
+         */
+        if (paddleMiddle - paddleSize <= 45) {
+            humanPaddleTopLeftY = 45;
+            humanPaddleBottomRightY = paddleSize*2 + 45;
+        }
+        else if (paddleMiddle + paddleSize >= screenHeight - 45) {
+            humanPaddleTopLeftY = (screenHeight - 45) - (paddleSize * 2);
+            humanPaddleBottomRightY = screenHeight - 45;
+        }
+        else {
+            humanPaddleTopLeftY = paddleMiddle - paddleSize;
+            humanPaddleBottomRightY = paddleMiddle + paddleSize;
+        }
+
+        if(ballScore >= 30){
+            Paint yellowPaint = new Paint();//paint for three items
+            yellowPaint.setColor(Color.YELLOW);
+            yellowPaint.setTextSize(300);
+            ballSpd = 0;
+            g.drawText("You Win! ", 300, 600, yellowPaint);//draws you win
+        }
+        else if(ballScore <= -30){
+            Paint yellowPaint = new Paint();//paint for three items
+            yellowPaint.setColor(Color.YELLOW);
+            yellowPaint.setTextSize(300);
+            ballSpd = 0;
+            g.drawText("You Lose :( ", 300, 600, yellowPaint);//draws you lose
+        }
+
 
         /**
          External Citation
          Date: 21 March 2018
          Problem: Ball positions weren't working properly
-
          Resource: ClassMate Anthony Lieu
-
          Solution: Create a new constant variable and multiply it by speed
          */
         int ballX = (ballStartX * ballSpd);
@@ -124,12 +162,30 @@ public class PongAnimator implements Animator {
                 DownLeft = false;
                 DownRight = false;
                 UpLeft = true;
+                ballSpd = ballSpd + 1;//causes ball to speed up each hit on a wall
+                if(ballSpd > 50 && ballSpd < 100) {
+                    ballScore++;
+                }else if(ballSpd > 100 && ballSpd < 150){
+                    ballScore = ballScore +2;//adds extra points for high ball speed
+                }else if(ballSpd > 150){
+                    ballScore = ballScore +3;
+                }
+
             }
             if (DownRight) {
                 UpLeft = false;
                 UpRight = false;
                 DownRight = false;
                 DownLeft = true;
+                ballSpd = ballSpd + 1;
+                ballSpd = ballSpd + 1;//causes ball to speed up each hit on a wall
+                if(ballSpd > 50 && ballSpd < 100) {
+                    ballScore++;
+                }else if(ballSpd > 100 && ballSpd < 150){
+                    ballScore = ballScore +2;//adds extra points for high ball speed
+                }else if(ballSpd > 150){
+                    ballScore = ballScore +3;
+                }
             }
         }
         else if ((ballY - 60) <= 50) { // hits top
@@ -139,6 +195,7 @@ public class PongAnimator implements Animator {
                 DownRight = false;
                 DownLeft = true;
                 ballWall = true;
+                ballSpd = ballSpd + 1;
             }
             if (UpRight) {
                 UpLeft = false;
@@ -146,6 +203,7 @@ public class PongAnimator implements Animator {
                 DownLeft = false;
                 DownRight = true;
                 ballWall = true;
+                ballSpd = ballSpd + 1;
             }
         }
             else if ((ballX - 60) <= 50) { // hits left side
@@ -155,6 +213,7 @@ public class PongAnimator implements Animator {
                     DownRight = false;
                     UpRight = true;
                     ballWall = true;
+                    ballSpd = ballSpd + 1;
                 }
                 if (DownLeft) {
                     UpLeft = false;
@@ -162,6 +221,7 @@ public class PongAnimator implements Animator {
                     DownLeft = false;
                     DownRight = true;
                     ballWall = true;
+                    ballSpd = ballSpd + 1;
                 }
             } else if ((ballY + 60) >= screenHeight - 50) { // hits bottom
                 if (DownLeft) {
@@ -170,6 +230,7 @@ public class PongAnimator implements Animator {
                     DownRight = false;
                     UpLeft = true;
                     ballWall = true;
+                    ballSpd = ballSpd + 1;
                 }
                 if (DownRight) {
                     UpLeft = false;
@@ -177,26 +238,24 @@ public class PongAnimator implements Animator {
                     DownRight = false;
                     UpRight = true;
                     ballWall = true;
+                    ballSpd = ballSpd + 1;
                 }
             }
 
-
         if (ballOut == true) {
             ballOut = false;//set to false so method doesnt instantly reacll next tick
-
+            ballScore = ballScore -5;//lose points if ball off screen
             /*
              External Citation
              Date: 21 March 2018
              Problem: Random ball position wont work
-
              Resource: ClassMate Anthony Lieu
-
              Solution: set it to random from 0-100 which would break on screens of
              different sizes but fixes for tablets of pixels like nexus9 and PixelC
              */
             ballStartX = gen.nextInt(30);//random starting location of the ball
-            ballStartY = gen.nextInt(30);//gen.nextInt(screenHeight);//TODO Should work? figure out why it fails
-            ballSpd = gen.nextInt(30) + 50;//randomly sets speed
+            ballStartY = gen.nextInt(30);//gen.nextInt(screenHeight);
+            ballSpd = gen.nextInt(30) + 40;//randomly sets speed
             ballX = ballStartX;//recalculates location
             ballY = ballStartY;
 
@@ -214,14 +273,11 @@ public class PongAnimator implements Animator {
 
         Paint whitePaint = new Paint();//paint for three items
         whitePaint.setColor(Color.WHITE);
-
         /*
          External Citation
          Date: 21 March 2018
          Problem: how to change colors between ticks
-
          Resource: ClassMate Chris Sebrects
-
          Solution: Randomly craete statements to change the definition of white
          paint even though it wont be white
          */
@@ -247,7 +303,23 @@ public class PongAnimator implements Animator {
         //Create White Paddle
         humanPaddle = new Paddle(humanPaddleTopLeftX, humanPaddleTopLeftY, humanPaddleBottomRightX, humanPaddleBottomRightY, whitePaint);
         g.drawRect(humanPaddle.paddleBounds, humanPaddle.paddleColor);
+        /*
+         External Citation
+         Date: 28 March 2018
+         Problem: how to change text size
+         Resource: https://stackoverflow.com/questions/18249592/how-to-change-font-size-in-drawstring-java
+         Solution: use set text and simply type the sting in drawText
+         */
+        whitePaint.setTextSize(75);//sets text size
+        g.drawText("SCORE "+ballScore, 50, 120, whitePaint);//draws score
+        g.drawText("Ball Speed: "+ballSpd, 50, 200, whitePaint);//draws speed
+
     }
     @Override
-    public void onTouch(MotionEvent event) {}
+    //Used to track paddle movement
+    public void onTouch(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_MOVE){
+            paddleMiddle = (int) event.getY();
+        }
+    }
 }
